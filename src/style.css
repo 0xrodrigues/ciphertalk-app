@@ -1,0 +1,77 @@
+:root {
+  --color-background: #0a0a0a;
+  --color-background-panel: #111827;
+  --color-neon-pink: #d946ef;
+  --color-neon-cyan: #06b6d4;
+  --color-text-primary: #e5e7eb;
+  --color-text-secondary: #9ca3af;
+}
+
+body {
+  margin: 0;
+  background: var(--color-background);
+  color: var(--color-text-primary);
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.neon-border {
+  border: 1px solid rgba(6, 182, 212, 0.4);
+}
+
+.btn {
+  border: none;
+  padding: 10px 18px;
+  border-radius: 10px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.btn.primary {
+  background: linear-gradient(135deg, var(--color-neon-pink), var(--color-neon-cyan));
+  color: black;
+}
+
+.btn.primary:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 12px var(--color-neon-cyan);
+}
+
+.btn.secondary {
+  background: transparent;
+  border: 1px solid var(--color-neon-pink);
+  color: var(--color-neon-pink);
+}
+
+.btn.secondary:hover {
+  background: var(--color-neon-pink);
+  color: black;
+}
+
+/* Glitch forte (para logo e título principal) */
+.glitch {
+  position: relative;
+  color: var(--color-neon-cyan);
+  font-weight: 900;
+  text-transform: uppercase;
+  animation: glitch 2s infinite;
+}
+
+@keyframes glitch {
+  0% { text-shadow: 2px 0 var(--color-neon-pink), -2px 0 var(--color-neon-cyan); }
+  20% { text-shadow: -2px -2px var(--color-neon-cyan), 2px 2px var(--color-neon-pink); }
+  40% { text-shadow: 2px -2px var(--color-neon-pink), -2px 2px var(--color-neon-cyan); }
+  60% { text-shadow: -2px 2px var(--color-neon-cyan), 2px -2px var(--color-neon-pink); }
+  80% { text-shadow: 2px 2px var(--color-neon-cyan), -2px -2px var(--color-neon-pink); }
+  100% { text-shadow: -2px 0 var(--color-neon-cyan), 2px 0 var(--color-neon-pink); }
+}
+
+/* Glitch sutil (para subtítulos e seções) */
+.glitch-soft {
+  color: var(--color-neon-pink);
+  text-shadow: 0 0 6px rgba(217, 70, 239, 0.6),
+               0 0 12px rgba(6, 182, 212, 0.4);
+  font-weight: 600;
+}
