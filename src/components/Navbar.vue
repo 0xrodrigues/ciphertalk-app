@@ -16,11 +16,7 @@
     </nav>
     <div class="nav-actions">
       <button class="btn secondary">Entrar</button>
-      <button 
-        v-if="showCreateButton" 
-        class="btn primary" 
-        @click="handleCreateRoomClick"
-      >
+      <button v-if="showCreateButton" class="btn primary" @click="handleCreateRoomClick">
         Criar Sala
       </button>
     </div>
@@ -77,14 +73,16 @@ const handleCreateRoomClick = () => {
 
 .navbar nav {
   display: flex;
-  gap: 12px;
+  gap: 50px;
 }
+
 
 .navbar nav a {
   color: var(--color-text-secondary);
   text-decoration: none;
   transition: color 0.2s;
   cursor: pointer;
+  font-weight: bold;  
 }
 
 .navbar nav a:hover {

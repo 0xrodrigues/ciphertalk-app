@@ -52,8 +52,15 @@
       </p>
 
       <div v-if="!loading && !error && rooms.length > 0" class="rooms-grid">
-        <RoomCard v-for="room in rooms" :key="room.id" :name="room.name" :description="room.description"
-          :created-at="formatDate(room.createdAt)" />
+        <RoomCard
+          v-for="room in rooms"
+          :key="room.id"
+          :name="room.name"
+          :description="room.description"
+          :created-at="formatDate(room.createdAt)"
+          :address="room.address"
+          :max-users="room.maxUsers"
+        />
       </div>
     </section>
 
