@@ -78,6 +78,7 @@ import Feature from '../components/Feature.vue'
 import Step from '../components/Step.vue'
 import RoomCard from '../components/RoomCard.vue'
 import { navigateTo } from '../utils/navigation.js'
+import axios from "axios";
 
 const rooms = ref([])
 const loading = ref(true)
@@ -89,21 +90,20 @@ const scrollToSalas = () => {
 
 // Função para buscar as salas do backend
 const fetchRooms = async () => {
+  loading.value = true
+
   try {
+    axios.get('/api/rooms').then(response => {
+      rooms.value = response.data
+      loading.value = false
+    }).catch(error => {
+      console.error('Erro ao buscar salas:', error)
+      error.value = error.message
+      loading.value = false
+    })
+  } catch {
     loading.value = true
-    // Usando o proxy configurado no vite.config.js
-    const response = await fetch('/api/rooms')
-
-    if (!response.ok) {
-      throw new Error('Erro ao carregar as salas')
-    }
-
-    const data = await response.json()
-    rooms.value = data
-    error.value = null
-  } catch (err) {
-    console.error('Erro ao buscar salas:', err)
-    error.value = err.message
+    error.value = 'Erro ao carregar as salas'
   } finally {
     loading.value = false
   }

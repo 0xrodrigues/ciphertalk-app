@@ -27,15 +27,8 @@
             <label for="name" class="form-label">
               Nome da Sala <span class="required">*</span>
             </label>
-            <input
-              type="text"
-              id="name"
-              v-model="formData.name"
-              placeholder="Ex: Debate eleições 2026"
-              class="form-input neon-border"
-              required
-              maxlength="100"
-            />
+            <input type="text" id="name" v-model="formData.name" placeholder="Ex: Debate eleições 2026"
+              class="form-input neon-border" required maxlength="100" />
             <span class="form-hint">
               {{ formData.name.length }}/100 caracteres
             </span>
@@ -46,14 +39,9 @@
             <label for="description" class="form-label">
               Descrição <span class="required">*</span>
             </label>
-            <textarea
-              id="description"
-              v-model="formData.description"
+            <textarea id="description" v-model="formData.description"
               placeholder="Ex: Debate sobre a corrida presidencial de 2026. Analisaremos candidatos e possíveis cenários"
-              class="form-textarea neon-border"
-              required
-              maxlength="500"
-            ></textarea>
+              class="form-textarea neon-border" required maxlength="500"></textarea>
             <span class="form-hint">
               {{ formData.description.length }}/500 caracteres
             </span>
@@ -64,12 +52,7 @@
             <label for="visibility" class="form-label">
               Visibilidade <span class="required">*</span>
             </label>
-            <select
-              id="visibility"
-              v-model="formData.visibility"
-              class="form-select neon-border"
-              required
-            >
+            <select id="visibility" v-model="formData.visibility" class="form-select neon-border" required>
               <option value="PUBLIC">Pública - Qualquer pessoa pode entrar</option>
               <option value="PRIVATE">Privada - Apenas com convite</option>
             </select>
@@ -83,15 +66,8 @@
             <label for="maxUsers" class="form-label">
               Máximo de Usuários <span class="required">*</span>
             </label>
-            <input
-              type="number"
-              id="maxUsers"
-              v-model.number="formData.maxUsers"
-              :min="2"
-              :max="100"
-              class="form-input neon-border"
-              required
-            />
+            <input type="number" id="maxUsers" v-model.number="formData.maxUsers" :min="2" :max="100"
+              class="form-input neon-border" required />
             <span class="form-hint">
               Entre 2 e 100 participantes
             </span>
@@ -99,19 +75,10 @@
 
           <!-- BOTÕES -->
           <div class="form-actions">
-            <button
-              type="button"
-              class="btn secondary"
-              @click="() => navigateTo('/')"
-              :disabled="loading"
-            >
+            <button type="button" class="btn secondary" @click="() => navigateTo('/')" :disabled="loading">
               Cancelar
             </button>
-            <button
-              type="submit"
-              class="btn primary"
-              :disabled="loading"
-            >
+            <button type="submit" class="btn primary" :disabled="loading">
               {{ loading ? "Criando..." : "Criar Sala" }}
             </button>
           </div>
@@ -125,6 +92,7 @@
 import { ref, reactive } from 'vue'
 import Navbar from '../components/Navbar.vue'
 import { navigateTo } from '../utils/navigation.js'
+import axios from "axios";
 
 const formData = reactive({
   name: "",
@@ -144,46 +112,27 @@ const handleSubmit = async (e) => {
   success.value = false
 
   try {
-    const response = await fetch("/api/rooms", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(formData),
+
+    axios.post("/api/rooms", formData).then(response => {
+      console.log("Sala criada:", response.data)
+      success.value = true
+      // Limpar formulário após sucesso
+      Object.assign(formData, {
+        name: "",
+        description: "",
+        visibility: "PUBLIC",
+        maxUsers: 10,
+      })
+      // Redirecionar após 2 segundos
+      setTimeout(() => {
+        navigateTo("/")
+      }, 2000)
+      loading.value = false
+    }).catch(error => {
+      console.error("Erro ao criar sala:", error)
+      error.value = error.message
+      loading.value = false
     })
-
-    if (!response.ok) {
-      throw new Error("Erro ao criar sala. Tente novamente.")
-    }
-
-    // Tentar parsear como JSON, se falhar, usar texto
-    let data
-    const contentType = response.headers.get("content-type")
-
-    if (contentType && contentType.includes("application/json")) {
-      data = await response.json()
-    } else {
-      // Se não for JSON, pegar como texto
-      data = await response.text()
-    }
-
-    console.log("Sala criada:", data)
-
-    success.value = true
-
-    // Limpar formulário após sucesso
-    Object.assign(formData, {
-      name: "",
-      description: "",
-      visibility: "PUBLIC",
-      maxUsers: 10,
-    })
-
-    // Redirecionar após 2 segundos
-    setTimeout(() => {
-      navigateTo("/")
-    }, 2000)
-
   } catch (err) {
     console.error("Erro ao criar sala:", err)
     error.value = err.message
@@ -319,6 +268,7 @@ const handleSubmit = async (e) => {
     opacity: 0;
     transform: translateY(-10px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -374,19 +324,19 @@ const handleSubmit = async (e) => {
 
 /* ANIMAÇÃO DE LOADING NO BOTÃO */
 .btn.primary:disabled {
-  background: linear-gradient(
-    135deg,
-    rgba(217, 70, 239, 0.5),
-    rgba(6, 182, 212, 0.5)
-  );
+  background: linear-gradient(135deg,
+      rgba(217, 70, 239, 0.5),
+      rgba(6, 182, 212, 0.5));
   animation: pulse 1.5s ease-in-out infinite;
 }
 
 @keyframes pulse {
+
   0%,
   100% {
     opacity: 1;
   }
+
   50% {
     opacity: 0.7;
   }
