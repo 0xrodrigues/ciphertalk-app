@@ -60,6 +60,7 @@
           :created-at="formatDate(room.createdAt)"
           :address="room.address"
           :max-users="room.maxUsers"
+          :hoster="room.hoster"
         />
       </div>
     </section>

@@ -36,7 +36,8 @@ const props = defineProps({
   maxUsers: {
     type: Number,
     default: 10
-  }
+  },
+  hoster: Number
 })
 
 const joining = ref(false)
