@@ -236,3 +236,19 @@ export const validateMessage = (message) => {
   const requiredFields = ['message', 'sender', 'timestamp', 'room_address', 'type']
   return requiredFields.every(field => message.hasOwnProperty(field))
 }
+
+/**
+ * Validar formato de notificação de usuário
+ */
+export const validateUserNotification = (notification) => {
+  if (!notification || typeof notification !== 'object') {
+    return false
+  }
+
+  const requiredFields = ['user', 'event']
+  const validEvents = ['CONNECTED', 'DISCONNECTED']
+
+  return requiredFields.every(field => notification.hasOwnProperty(field)) &&
+         validEvents.includes(notification.event) &&
+         typeof notification.user === 'number'
+}

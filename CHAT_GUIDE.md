@@ -14,6 +14,7 @@ Este documento explica a funcionalidade de chat em tempo real implementada no pr
 
 ### Utilitários
 - **`src/utils/websocket.js`** - Classe para gerenciar conexões WebSocket
+- **`src/utils/chatTestUtils.js`** - Utilitários para testar funcionalidades do chat
 
 ### Configuração
 - **`src/App.vue`** - Roteamento atualizado com rota da sala
@@ -38,6 +39,7 @@ Este documento explica a funcionalidade de chat em tempo real implementada no pr
 - Área de mensagens com scroll automático
 - Input para enviar mensagens
 - Diferenciação visual entre mensagens próprias e de outros usuários
+- **Notificações de entrada/saída de usuários**
 
 ### 4. **Gerenciamento de Estado**
 - Estado de conexão WebSocket
@@ -58,7 +60,9 @@ ws://localhost:8080/ws-chat-message?address={room_address}&user={user_id}
 - **address**: Endereço da sala (obtido do GET /api/rooms)
 - **user**: ID do usuário (fictício: 1296)
 
-### Formato da Mensagem
+### Formato das Mensagens
+
+#### Mensagem de Texto
 ```json
 {
     "message": "Testando mensagens",
@@ -68,6 +72,56 @@ ws://localhost:8080/ws-chat-message?address={room_address}&user={user_id}
     "type": "TEXT"
 }
 ```
+
+#### Notificação de Usuário
+```json
+{
+    "user": 87321813,
+    "event": "CONNECTED"
+}
+```
+
+**Eventos suportados:**
+- `CONNECTED`: Usuário entrou na sala
+- `DISCONNECTED`: Usuário saiu da sala
+
+---
+
+## 🔔 Sistema de Notificações
+
+### Tipos de Notificação
+1. **Entrada de Usuário** (🟢): Quando um usuário se conecta à sala
+2. **Saída de Usuário** (🔴): Quando um usuário se desconecta da sala
+
+### Processamento de Notificações
+```javascript
+// Exemplo de como as notificações são processadas
+chatWebSocket.setOnMessage((data) => {
+  if (validateUserNotification(data)) {
+    // Criar notificação visual
+    const notification = {
+      type: 'USER_EVENT',
+      user: data.user,
+      event: data.event,
+      timestamp: new Date().toISOString()
+    }
+
+    // Atualizar contador de usuários
+    if (data.event === 'CONNECTED') {
+      onlineUsers.value++
+    } else if (data.event === 'DISCONNECTED') {
+      onlineUsers.value--
+    }
+  }
+})
+```
+
+### Estilo Visual
+- **Notificações centralizadas** na área de mensagens
+- **Ícones coloridos** para diferentes eventos
+- **Texto descritivo** com nome do usuário
+- **Timestamp** para referência temporal
+- **Design discreto** para não interferir no chat
 
 ---
 

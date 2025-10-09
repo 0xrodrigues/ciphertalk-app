@@ -17,13 +17,28 @@
       <div v-if="messages.length === 0" class="no-messages">
         <p>Nenhuma mensagem ainda. Seja o primeiro a enviar uma mensagem!</p>
       </div>
-      <div v-for="message in messages" :key="message.timestamp + message.sender" class="message"
-        :class="{ 'own-message': message.sender === currentUserId }">
-        <div class="message-header">
-          <span class="sender">Usuário {{ message.sender }}</span>
-          <span class="timestamp">{{ formatTimestamp(message.timestamp) }}</span>
-        </div>
-        <div class="message-content">{{ message.message }}</div>
+      <div
+        v-for="(item, index) in messages"
+        :key="index"
+        :class="getMessageClass(item)"
+      >
+        <!-- Mensagem de texto normal -->
+        <template v-if="item.type === 'TEXT'">
+          <div class="message-header">
+            <span class="sender">Usuário {{ item.sender }}</span>
+            <span class="timestamp">{{ formatTimestamp(item.timestamp) }}</span>
+          </div>
+          <div class="message-content">{{ item.message }}</div>
+        </template>
+
+        <!-- Notificação de usuário -->
+        <template v-else-if="item.type === 'USER_EVENT'">
+          <div class="notification-content">
+            <span class="notification-icon">{{ getNotificationIcon(item.event) }}</span>
+            <span class="notification-text">{{ getNotificationText(item) }}</span>
+            <span class="notification-time">{{ formatTimestamp(item.timestamp) }}</span>
+          </div>
+        </template>
       </div>
     </div>
 
@@ -47,7 +62,7 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted, nextTick, computed } from 'vue'
-import { createChatWebSocket, formatMessageTimestamp, validateMessage } from '../utils/websocket.js'
+import { createChatWebSocket, formatMessageTimestamp, validateMessage, validateUserNotification } from '../utils/websocket.js'
 
 const props = defineProps({
   roomAddress: {
@@ -96,16 +111,36 @@ const connectWebSocket = () => {
     isConnected.value = connected
   })
 
-  chatWebSocket.setOnMessage((message) => {
-    if (validateMessage(message)) {
-      // Adicionar mensagem à lista
-      messages.value.push(message)
+  chatWebSocket.setOnMessage((data) => {
+    // Verificar se é uma notificação de usuário
+    if (validateUserNotification(data)) {
+      // Criar notificação de usuário
+      const notification = {
+        type: 'USER_EVENT',
+        user: data.user,
+        event: data.event,
+        timestamp: new Date().toISOString()
+      }
 
-      // Scroll para o final
-      nextTick(() => {
-        scrollToBottom()
-      })
+      messages.value.push(notification)
+
+      // Atualizar contador de usuários online (estimativa)
+      if (data.event === 'CONNECTED') {
+        onlineUsers.value++
+      } else if (data.event === 'DISCONNECTED' && onlineUsers.value > 0) {
+        onlineUsers.value--
+      }
+    } else if (validateMessage(data)) {
+      // Mensagem de texto normal
+      messages.value.push(data)
+    } else {
+      console.warn('Mensagem recebida em formato inválido:', data)
     }
+
+    // Scroll para o final
+    nextTick(() => {
+      scrollToBottom()
+    })
   })
 
   chatWebSocket.setOnError((error) => {
@@ -134,6 +169,45 @@ const sendMessage = (e) => {
 // Formatar timestamp
 const formatTimestamp = (timestamp) => {
   return formatMessageTimestamp(timestamp)
+}
+
+// Obter classe CSS para mensagem/notificação
+const getMessageClass = (item) => {
+  if (item.type === 'USER_EVENT') {
+    return 'notification'
+  } else if (item.type === 'TEXT') {
+    return {
+      'message': true,
+      'own-message': item.sender === currentUserId.value
+    }
+  }
+  return 'message'
+}
+
+// Obter ícone para notificação
+const getNotificationIcon = (event) => {
+  switch (event) {
+    case 'CONNECTED':
+      return '🟢'
+    case 'DISCONNECTED':
+      return '🔴'
+    default:
+      return '📢'
+  }
+}
+
+// Obter texto para notificação
+const getNotificationText = (item) => {
+  const userName = `Usuário ${item.user}`
+
+  switch (item.event) {
+    case 'CONNECTED':
+      return `${userName} entrou na sala`
+    case 'DISCONNECTED':
+      return `${userName} saiu da sala`
+    default:
+      return `${userName} - evento desconhecido`
+  }
 }
 
 // Scroll para o final das mensagens
@@ -229,6 +303,38 @@ onUnmounted(() => {
   margin-left: 50px;
 }
 
+.notification {
+  margin-bottom: 10px;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  text-align: center;
+}
+
+.notification-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--color-text-secondary);
+}
+
+.notification-icon {
+  font-size: 14px;
+}
+
+.notification-text {
+  flex: 1;
+  font-weight: 500;
+}
+
+.notification-time {
+  font-size: 11px;
+  opacity: 0.7;
+}
+
 .message-header {
   display: flex;
   justify-content: space-between;
@@ -306,6 +412,16 @@ onUnmounted(() => {
 
   .message.own-message {
     margin-left: 20px;
+  }
+
+  .notification-content {
+    flex-direction: column;
+    gap: 4px;
+    text-align: center;
+  }
+
+  .notification-text {
+    font-size: 12px;
   }
 
   .message-form {
