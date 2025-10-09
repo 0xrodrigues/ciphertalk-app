@@ -123,11 +123,9 @@ export class ChatWebSocket {
     }
 
     const messageData = {
-      message: message.trim(),
       sender: this.userId,
-      timestamp: new Date().toISOString(),
-      room_address: this.roomAddress,
-      type: "TEXT"
+      message: message.trim(),
+      moment: new Date() // Timestamp será convertido pelo backend
     }
 
     try {
@@ -203,8 +201,19 @@ export const createChatWebSocket = (roomAddress, userId) => {
 /**
  * Utilitário para formatar timestamp de mensagem
  */
-export const formatMessageTimestamp = (timestamp) => {
-  const date = new Date(timestamp)
+export const formatMessageTimestamp = (moment) => {
+  // Converter moment para Date se necessário
+  let date
+  if (moment instanceof Date) {
+    date = moment
+  } else if (typeof moment === 'string') {
+    date = new Date(moment)
+  } else if (typeof moment === 'number') {
+    date = new Date(moment)
+  } else {
+    date = new Date() // Fallback
+  }
+
   const now = new Date()
   const diffInHours = (now - date) / (1000 * 60 * 60)
 
@@ -233,8 +242,16 @@ export const validateMessage = (message) => {
     return false
   }
 
-  const requiredFields = ['message', 'sender', 'timestamp', 'room_address', 'type']
-  return requiredFields.every(field => message.hasOwnProperty(field))
+  // Campos obrigatórios para o novo formato (ID é opcional, gerado pelo backend)
+  const requiredFields = ['sender', 'message', 'moment']
+  const hasRequiredFields = requiredFields.every(field => message.hasOwnProperty(field))
+
+  // Validar tipos
+  const hasValidTypes = typeof message.sender === 'number' &&
+                       typeof message.message === 'string' &&
+                       (typeof message.moment === 'string' || message.moment instanceof Date)
+
+  return hasRequiredFields && hasValidTypes
 }
 
 /**

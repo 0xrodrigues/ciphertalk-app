@@ -73,17 +73,20 @@ chatWebSocket.setOnMessage((data) => {
       type: 'USER_EVENT',
       user: data.user,
       event: data.event,
-      timestamp: new Date().toISOString()
+      moment: new Date().toISOString()
     }
-    
+
     messages.value.push(notification)
-    
+
     // Atualizar contador
     if (data.event === 'CONNECTED') {
       onlineUsers.value++
     } else if (data.event === 'DISCONNECTED') {
       onlineUsers.value--
     }
+  } else if (validateMessage(data)) {
+    // Mensagem de texto com novo formato
+    messages.value.push(data)
   }
 })
 ```

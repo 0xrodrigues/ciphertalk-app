@@ -23,10 +23,10 @@
         :class="getMessageClass(item)"
       >
         <!-- Mensagem de texto normal -->
-        <template v-if="item.type === 'TEXT'">
+        <template v-if="isTextMessage(item)">
           <div class="message-header">
             <span class="sender">Usuário {{ item.sender }}</span>
-            <span class="timestamp">{{ formatTimestamp(item.timestamp) }}</span>
+            <span class="timestamp">{{ formatTimestamp(item.moment) }}</span>
           </div>
           <div class="message-content">{{ item.message }}</div>
         </template>
@@ -171,11 +171,16 @@ const formatTimestamp = (timestamp) => {
   return formatMessageTimestamp(timestamp)
 }
 
+// Verificar se é mensagem de texto
+const isTextMessage = (item) => {
+  return item.sender && item.message && item.moment && !item.type
+}
+
 // Obter classe CSS para mensagem/notificação
 const getMessageClass = (item) => {
   if (item.type === 'USER_EVENT') {
     return 'notification'
-  } else if (item.type === 'TEXT') {
+  } else if (isTextMessage(item)) {
     return {
       'message': true,
       'own-message': item.sender === currentUserId.value

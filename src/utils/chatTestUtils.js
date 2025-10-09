@@ -26,20 +26,18 @@ export const simulateUserDisconnected = (userId = Math.floor(Math.random() * 100
 /**
  * Simular mensagem de texto
  */
-export const simulateTextMessage = (message = "Mensagem de teste", senderId = Math.floor(Math.random() * 100000), roomAddress = "test-room") => {
+export const simulateTextMessage = (message = "Mensagem de teste", senderId = Math.floor(Math.random() * 100000)) => {
   return {
-    message: message,
     sender: senderId,
-    timestamp: new Date().toISOString(),
-    room_address: roomAddress,
-    type: "TEXT"
+    message: message,
+    moment: new Date().toISOString()
   }
 }
 
 /**
  * Simular sequência de eventos para teste
  */
-export const simulateEventSequence = (roomAddress = "test-room") => {
+export const simulateEventSequence = () => {
   const events = []
   const userIds = [12345, 67890, 11111, 22222]
   
@@ -52,15 +50,15 @@ export const simulateEventSequence = (roomAddress = "test-room") => {
   
   // Algumas mensagens
   setTimeout(() => {
-    events.push(simulateTextMessage("Olá pessoal!", userIds[0], roomAddress))
+    events.push(simulateTextMessage("Olá pessoal!", userIds[0]))
   }, 2000)
-  
+
   setTimeout(() => {
-    events.push(simulateTextMessage("Oi! Como estão?", userIds[1], roomAddress))
+    events.push(simulateTextMessage("Oi! Como estão?", userIds[1]))
   }, 3000)
-  
+
   setTimeout(() => {
-    events.push(simulateTextMessage("Tudo bem por aqui!", userIds[2], roomAddress))
+    events.push(simulateTextMessage("Tudo bem por aqui!", userIds[2]))
   }, 4000)
   
   // Um usuário saindo
@@ -70,7 +68,7 @@ export const simulateEventSequence = (roomAddress = "test-room") => {
   
   // Mais mensagens
   setTimeout(() => {
-    events.push(simulateTextMessage("Alguém saiu da sala...", userIds[0], roomAddress))
+    events.push(simulateTextMessage("Alguém saiu da sala...", userIds[0]))
   }, 6000)
   
   return events
@@ -94,13 +92,12 @@ export const testChatNotifications = () => {
  * Validar se uma notificação está no formato correto
  */
 export const validateNotificationFormat = (notification) => {
-  const isUserEvent = notification.user && notification.event && 
+  const isUserEvent = notification.user && notification.event &&
                      ['CONNECTED', 'DISCONNECTED'].includes(notification.event)
-  
-  const isTextMessage = notification.message && notification.sender && 
-                       notification.timestamp && notification.room_address && 
-                       notification.type === 'TEXT'
-  
+
+  const isTextMessage = notification.sender && notification.message &&
+                       notification.moment && typeof notification.sender === 'number'
+
   return {
     isValid: isUserEvent || isTextMessage,
     type: isUserEvent ? 'USER_EVENT' : isTextMessage ? 'TEXT' : 'UNKNOWN',
@@ -132,16 +129,22 @@ export const generateTestUsers = (count = 5) => {
 /**
  * Simular atividade de chat realística
  */
-export const simulateRealisticChatActivity = (roomAddress, duration = 30000) => {
+export const simulateRealisticChatActivity = (duration = 30000) => {
   const events = []
   const users = generateTestUsers(8)
   let eventCount = 0
   
   const addEvent = (event) => {
-    events.push({
-      ...event,
-      timestamp: new Date(Date.now() + eventCount * 1000).toISOString()
-    })
+    if (event.moment) {
+      // Para mensagens de texto, atualizar o moment
+      events.push({
+        ...event,
+        moment: new Date(Date.now() + eventCount * 1000).toISOString()
+      })
+    } else {
+      // Para notificações de usuário, manter como está
+      events.push(event)
+    }
     eventCount++
   }
   
@@ -171,7 +174,7 @@ export const simulateRealisticChatActivity = (roomAddress, duration = 30000) => 
     const randomUser = users[Math.floor(Math.random() * Math.min(5, users.length))]
     const randomMessage = messages[Math.floor(Math.random() * messages.length)]
     
-    addEvent(simulateTextMessage(randomMessage, randomUser.id, roomAddress))
+    addEvent(simulateTextMessage(randomMessage, randomUser.id))
   }, 3000)
   
   // Alguns usuários saindo

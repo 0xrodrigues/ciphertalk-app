@@ -62,14 +62,22 @@ ws://localhost:8080/ws-chat-message?address={room_address}&user={user_id}
 
 ### Formato das Mensagens
 
-#### Mensagem de Texto
+#### Mensagem de Texto (Enviada)
 ```json
 {
-    "message": "Testando mensagens",
     "sender": 5345,
-    "timestamp": "2024-06-15T12:00:00Z",
-    "room_address": "f6a5316b-f66d-49f6-8f05-ac93c712a367",
-    "type": "TEXT"
+    "message": "Testando mensagens",
+    "moment": "2024-06-15T12:00:00Z"
+}
+```
+
+#### Mensagem de Texto (Recebida)
+```json
+{
+    "id": "msg_1234567890_abc123def",
+    "sender": 5345,
+    "message": "Testando mensagens",
+    "moment": "2024-06-15T12:00:00Z"
 }
 ```
 
